@@ -36,6 +36,7 @@ start:
 	la a0,bss_start
 	la a1,bss_end
 	bgeu a0,a1,configure_hart
+
 	# loop over all bytes in BSS and set them to zero
 bss_clear_loop:
 	# write zero to the double word pointed to by the 
@@ -47,7 +48,38 @@ bss_clear_loop:
 	bltu a0,a1,bss_clear_loop
 
 configure_hart:
-	
+	# Initialize all control registers
+	# Set machine mode trap delegations, delegate everything to 
+	# supervisor mode
+	li t1,0xffff
+	csrw mideleg,t1
+	csrw medeleg,t1
+	# Set stack pointer
+	la sp,stack
+	# Set machine mode status
+	# bits 11 and 12: machine privilege level
+	# bit 7: machine mode past interrupt enabled
+	# bit 3: machine mode current interrupt enabled
+	li t2,0x1888
+	csrw mstatus,t2
+	# Overwrite the address in mepc by the address of the 
+	# kernel entry point and use mret to return to it
+	la t0,kernel_main
+	csrw mepc,t0
+	# Set the machine mode trap vector location
+	la t1,trap_location
+	csrw mtvec,t1
+	# Enable all traps in mie (timer, software and external)
+	# for machine mode, this requires setting bits 3, 7 and 11
+	# in mie register
+	li t2,0x0888
+	csrw mie,t2
+	# Upon executing mret below, the control will go to the 
+	# kernel and will never come back. Set the return address 
+	# to the sleep section below to have something to return 
+	# to but it will never be used. 
+	la ra,non_zero_sleep
+	mret
 
 non_zero_sleep:
 	# Sleep until woken up by an interrupt from another core
