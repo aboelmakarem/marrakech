@@ -68,19 +68,41 @@ SECTIONS
 	# Program initialized read/write data
 	.data : 
 	{
+		# Align this section to a 4 KB boundary
+		. = ALIGN(4096);
 		PROVIDE(data_start = .);
 		# put the boot text first before anything else
-		*(.text.boot) *(.text .text.*)
+		*(.sdata .sdata.*) *(.data .data.*)
 		PROVIDE(data_end = .);
-	}
+		# Place read/write data in a memory data section that 
+		# is separate from program code and read-only data
+	} > ram AT>ram : data
 
 	# Program uninitialized data
 	.bss : 
 	{
-		PROVIDE(text_start = .);
+		PROVIDE(bss_start = .);
 		# put the boot text first before anything else
-		*(.text.boot) *(.text .text.*)
-		PROVIDE(text_end = .);
-		
-	}
+		*(.sbss .sbss.*) *(.bss .bss.*)
+		PROVIDE(bss_end = .);
+		# Place uninitialized read/write data in the same memory
+		# data section along with initialized read/write data
+	} > ram AT>ram : data
+
+	# Define the memory location where heap and stack can be 
+	# allocated. These will be calculated based on the currently 
+	# set memory start location. Calculate the memory end location 
+	# from the previously defined memory called ram. 
+	PROVIDE(memory_start = ORIGIN(ram));
+	PROVIDE(memory_end = ORIGIN(ram) + LENGTH(ram));
+	# Let the kernel stack start at the end of the BSS section. 
+	# Because stack grows downwards, the end of the kernel stack 
+	# section needs to be calculated. Allocate 512 KB for the 
+	# kernel stack.  
+	PROVIDE(stack = bss_end + 0x80000);
+	# The kernel heap region is all the space above the stack and 
+	# all the way up to the end of memory
+	PROVIDE(heap_start = stack);
+	PROVIDE(heap_end = memory_end);
+	PROVIDE(heap_size = heap_end - heap_start);
 }
