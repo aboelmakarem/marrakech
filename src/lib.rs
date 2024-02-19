@@ -1,5 +1,6 @@
 
 #![no_std]
+pub mod uart;
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> !
@@ -9,7 +10,11 @@ fn panic(_info: &core::panic::PanicInfo) -> !
 
 #[no_mangle]
 extern "C"
-fn kernel_main() -> !
+fn kernel_main()
 {
-    loop {}
+    // Create a new UART communicator and use it to write strings 
+    // to display. 
+    let mut uart0: uart::UART = uart::UART::new(0x10000000);
+    uart0.init();
+    uart0.write("welcome to marrakech");
 }
