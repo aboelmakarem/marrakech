@@ -28,7 +28,7 @@ start:
 	# hpmcounter3 --> hpmcounter31
 	# 3. Allow all counters to run by disabling all counter 
 	# inhibitions
-	csrw mcountinhibit, zero
+	#csrw mcountinhibit, zero
 	# 4. Enable supervisor mode to read time and instret 
 	# counters only
 	li t0,0x07

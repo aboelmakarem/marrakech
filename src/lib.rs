@@ -17,4 +17,13 @@ fn kernel_main()
     let mut uart0: uart::UART = uart::UART::new(0x10000000);
     uart0.init();
     uart0.write("welcome to marrakech");
+    loop
+    {
+        let c: u8 = uart0.get();
+        if c != 0
+        {
+            uart0.put(10);
+            uart0.put(c);
+        }
+    }
 }
