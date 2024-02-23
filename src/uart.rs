@@ -2,6 +2,38 @@
 // Ahmed Hussein (amhussein4@gmail.com)
 // 2/15/2024
 
+
+// Takes a number and a quartet index and returns the hexdemical digit (0 - F) 
+// that corresponds to the chosen quartet. A quartet is a group of 4 bits. The 
+// quartets are indexed starting from the least significant side (index 0) up 
+// to the most significant side where the index increases by 1 every 4 bits. 
+fn hex_quartet_digit(number: usize,index: usize) -> u8
+{
+	let shift = 4*index;
+	let quartet = (number >> shift) & 0xf;
+	let digit = match quartet
+	{
+		0 => b'0',
+		1 => b'1',
+		2 => b'2',
+		3 => b'3',
+		4 => b'4',
+		5 => b'5',
+		6 => b'6',
+		7 => b'7',
+		8 => b'8',
+		9 => b'9',
+		10 => b'a',
+		11 => b'b',
+		12 => b'c',
+		13 => b'd',
+		14 => b'e',
+		15 => b'f',
+		_ => 0
+	};
+	digit
+}
+
 // A struct to encapsulate all UART communication related data
 pub struct UART
 {
@@ -89,6 +121,44 @@ impl UART
 		{
 			self.put(character);
 		}
+	}
+	pub fn writeln(&mut self,string: &str)
+	{
+		self.write(string);
+		self.put(b'\n');
+	}
+	pub fn write_address(&mut self,address: usize)
+	{
+		// Write a number of hexdecimal digits that 
+		// depends on the give address
+		self.put(b' ');
+		self.put(b'0');
+		self.put(b'x');
+		if address < 65536
+		{
+			// Write a 4-digit address 0xWWWW
+			for i in (0..4).rev()
+			{
+				self.put(hex_quartet_digit(address,i));
+			}
+		}
+		else if address < 4294967296
+		{
+			// Write an 8-digit address 0xVVVVWWWW
+			for i in (0..8).rev()
+			{
+				self.put(hex_quartet_digit(address,i));
+			}
+		}
+		else
+		{
+			// Write a 16-digit address 0xUUUUUUUUVVVVWWWW
+			for i in (0..16).rev()
+			{
+				self.put(hex_quartet_digit(address,i));
+			}
+		}
+		self.put(b' ');
 	}
 }
 

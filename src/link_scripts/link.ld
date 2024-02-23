@@ -98,11 +98,12 @@ SECTIONS
 	# Let the kernel stack start at the end of the BSS section. 
 	# Because stack grows downwards, the end of the kernel stack 
 	# section needs to be calculated. Allocate 512 KB for the 
-	# kernel stack.  
-	PROVIDE(stack = bss_end + 0x80000);
+	# kernel stack. 
+	PROVIDE(kernel_stack_start = bss_end);
+	PROVIDE(kernel_stack_end = kernel_stack_start + 0x80000);
 	# The kernel heap region is all the space above the stack and 
 	# all the way up to the end of memory
-	PROVIDE(heap_start = stack);
+	PROVIDE(heap_start = kernel_stack_end);
 	PROVIDE(heap_end = memory_end);
 	PROVIDE(heap_size = heap_end - heap_start);
 }

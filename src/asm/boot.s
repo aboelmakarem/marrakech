@@ -101,7 +101,7 @@ bss_clear_loop:
 configure_hart:
 	# Initialize all control registers
 	# Set stack pointer
-	la sp,stack
+	la sp,kernel_stack_end
 	# Set machine mode status
 	# bits 11 and 12: machine privilege level
 	# bit 7: machine mode past interrupt enabled
